@@ -14,6 +14,7 @@ public class UserService {
     private final UserRepository  userRepository;
     private final PasswordEncoder passwordEncoder;
 
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -50,7 +51,8 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
     public User findUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
 
 

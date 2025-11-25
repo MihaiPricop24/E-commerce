@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Setter
@@ -17,10 +19,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column( nullable = false)
     private String firstName;
-
-    @Column( nullable = false)
     private String lastName;
 
     @Column( nullable = false, unique = true)
@@ -29,13 +28,16 @@ public class User {
     @Column( nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String phoneNumber;
 
-    @Column(nullable = false)
     private String address;
 
-    @Column(nullable = false)
     private String city;
+
+    @OneToMany(mappedBy = "user")
+    private List<Order> orders;
+
+    @OneToMany(mappedBy = "user")
+    private List<Cart> cartItems;
 
 }

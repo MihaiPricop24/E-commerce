@@ -1,6 +1,5 @@
 package com.example.appleStore.Model;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,18 +18,18 @@ public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
-    @Column(nullable = false)
+    @Column
     private String productName;
 
-    @Column(nullable = false)
-    private String description;
+    @Column
+    private String productDescription;
 
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductVariants> variants;
+    @OneToMany(mappedBy = "product")
+    private List<ProductVariant> variants;
 }

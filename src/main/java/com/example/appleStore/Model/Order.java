@@ -6,23 +6,28 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "orders")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category {
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String categoryName;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    @OneToMany(mappedBy = "category")
-    private List<Product> products;
+    private Double price;
+    private LocalDateTime timeOfOrder;
+    private String status;
 
+    @OneToMany(mappedBy = "order")
+    private List<OrderItem> orderItems;
 }

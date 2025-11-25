@@ -31,23 +31,17 @@ public class UserController {
     @GetMapping("/register")
     public String showRegisterPage(HttpSession session) {
         if (session.getAttribute("user") != null) {
-            return "redirect:/"; // user already logged in
+            return "redirect:/";
         }
-        return "register"; // loads register.html (Thymeleaf template)
+        return "register";
     }
 
     @GetMapping("/login")
     public String showLoginPage(HttpSession session) {
         if (session.getAttribute("user") != null) {
-            return "redirect:/"; // user already logged in
+            return "redirect:/";
         }
         return "login";
-    }
-
-    @GetMapping("/")
-    public String showHomePage(HttpSession session, Model model) {
-        model.addAttribute("user", session.getAttribute("user"));
-        return "home";
     }
 
     @GetMapping("/logout")
@@ -69,7 +63,7 @@ public class UserController {
             newUser.setFirstName(firstName);
             newUser.setLastName(lastName);
             newUser.setEmail(email);
-            newUser.setPassword(password); // raw password for now — will be hashed in service
+            newUser.setPassword(password);
             newUser.setPhoneNumber(phoneNumber);
             newUser.setAddress(address);
             newUser.setCity(city);
@@ -78,26 +72,25 @@ public class UserController {
 
             return "redirect:/login";
         } catch (Exception e) {
-            model.addAttribute("message", "❌ Registration failed: " + e.getMessage());
+            model.addAttribute("message", "Registration failed: " + e.getMessage());
         }
 
-        return "register"; // reloads page and shows message
+        return "register";
     }
 
     @PostMapping("/login")
     public String login(@RequestParam String email,
                         @RequestParam String password,
                         HttpSession session,
-                        Model model) {
+                        Model model) throws Exception {
 
-        User user = userRepository.findByEmail(email);
+        User user = userService.loginUser(email,password);
 
-        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
+        if (user == null) {
             model.addAttribute("error", "Invalid email or password");
             return "login";
         }
 
-        // ✅ store user info in session
         session.setAttribute("user", user);
 
         return "redirect:/";

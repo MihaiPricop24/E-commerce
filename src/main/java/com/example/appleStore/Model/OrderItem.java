@@ -6,23 +6,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Entity
-@Table(name = "categories")
+@Table(name = "orderItems")
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Category {
+public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
-    private String categoryName;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
 
-    @OneToMany(mappedBy = "category")
-    private List<Product> products;
+    @ManyToOne
+    @JoinColumn(name = "product_variant_id")
+    private ProductVariant productVariant;
 
+    private Integer quantity;
+
+    private Double price;
 }
