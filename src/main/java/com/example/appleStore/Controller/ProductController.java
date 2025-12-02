@@ -1,103 +1,77 @@
 package com.example.appleStore.Controller;
 
+import com.example.appleStore.DTO.ProductFilterDTO;
 import com.example.appleStore.Model.Category;
 import com.example.appleStore.Model.Product;
 import com.example.appleStore.Model.User;
 import com.example.appleStore.Service.CategoryService;
 import com.example.appleStore.Service.ProductService;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
     private final CategoryService categoryService;
 
-    public ProductController(ProductService productService, CategoryService categoryService) {
-        this.productService = productService;
-        this.categoryService = categoryService;
-    }
-
     @GetMapping("/")
-    public String homepage(HttpSession httpSession, Model model) {
-        User user = (User) httpSession.getAttribute("user");
-        if(user == null){
-            return "redirect:/login";
-        }
+    public String homepage(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false, defaultValue = "name") String sortBy,
+            HttpSession httpSession,
+            Model model) {
+
+        User user = getAuthenticatedUser(httpSession);
+        if(user == null) return "redirect:/login";
 
         try {
-            List<Product> products = productService.getAllProducts();
+            ProductFilterDTO filters = buildFilters(search, null, minPrice, maxPrice, sortBy);
+            List<Product> products = productService.filterProducts(filters);
 
-            List<Category> categories = categoryService.getAll();
-
-            model.addAttribute("user", user);
-            model.addAttribute("products", products);
-            model.addAttribute("categories", categories);
-            model.addAttribute("selectedCategory", "All Products");
-
+            setupModel(model, user, products, "All Products");
             return "home";
         } catch(Exception e){
-            model.addAttribute("message", "Error loading products: " + e.getMessage());
-            return "error";
+            return handleError(model, e);
         }
     }
 
-    @GetMapping("/category/{categoryId}")
-    public String productsByCategory(@PathVariable Long categoryId, HttpSession httpSession, Model model) {
-        User user = (User) httpSession.getAttribute("user");
-        if(user == null){
-            return "redirect:/login";
-        }
-
-        try{
-
-            List<Product> products = productService.getProductByCategory(categoryId);
-
-            List<Category> categories = categoryService.getAll();
-
-            Category selectedCategory = categoryService.getCategoryByID(categoryId);
-
-            model.addAttribute("user", user);
-            model.addAttribute("products", products);
-            model.addAttribute("categories", categories);
-            model.addAttribute("selectedCategory", selectedCategory);
-
-            return "home";
-        } catch(Exception e){
-            model.addAttribute("message", "Error loading products: " + e.getMessage());
-            return "error";
-        }
+    // Helper methods
+    private User getAuthenticatedUser(HttpSession session) {
+        return (User) session.getAttribute("user");
     }
 
-    @GetMapping("/product/{id}")
-    public String productDetails(@PathVariable Long id, HttpSession httpSession, Model model) {
-        User user = (User) httpSession.getAttribute("user");
-        if(user == null){
-            return "redirect:/login";
-        }
+    private ProductFilterDTO buildFilters(String search, Long categoryId,
+                                          Double minPrice, Double maxPrice, String sortBy) {
+        ProductFilterDTO filters = new ProductFilterDTO();
+        filters.setSearchQuery(search);
+        filters.setCategoryId(categoryId);
+        filters.setMinPrice(minPrice);
+        filters.setMaxPrice(maxPrice);
+        filters.setSortBy(sortBy);
+        filters.setSortOrder("asc");
+        return filters;
+    }
 
-        try{
+    private void setupModel(Model model, User user, List<Product> products, String selectedCategory) {
+        model.addAttribute("user", user);
+        model.addAttribute("products", products);
+        model.addAttribute("categories", categoryService.getAll());
+        model.addAttribute("selectedCategory", selectedCategory);
+    }
 
-            Product product = productService.getProductsWithVariants(id);
-
-            if(product == null){
-                model.addAttribute("message", "Product not found");
-                return "error";
-            }
-
-            model.addAttribute("user", user);
-            model.addAttribute("product", product);
-
-            return "product-detail";
-        } catch(Exception e){
-            model.addAttribute("message", "Error loading products: " + e.getMessage());
-            return "error";
-        }
+    private String handleError(Model model, Exception e) {
+        model.addAttribute("message", "Error loading products: " + e.getMessage());
+        return "error";
     }
 }

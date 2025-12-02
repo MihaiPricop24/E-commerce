@@ -4,6 +4,7 @@ import com.example.appleStore.Model.User;
 import com.example.appleStore.Repository.UserRepository;
 import com.example.appleStore.Service.UserService;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,19 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
-
-    private final UserRepository userRepository;
-
-    private final PasswordEncoder passwordEncoder;
-
-    public UserController(UserService userService, UserRepository userRepository, PasswordEncoder passwordEncoder) {  // Spring injects automatically
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @GetMapping("/register")
     public String showRegisterPage(HttpSession session) {

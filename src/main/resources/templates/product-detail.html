@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${product.productName} + ' - Apple Store'">Product - Apple Store</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- NAVBAR (Same as home.html) -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/"> Apple Store</a>
+
+        <form class="d-flex me-auto ms-3">
+            <input class="form-control me-2" type="search" placeholder="Search" name="search">
+            <button class="btn btn-success" type="submit">Search</button>
+        </form>
+
+        <!-- Conditional navbar items -->
+        <div th:if="${user == null}">
+            <a href="/login" class="btn btn-outline-light me-2">Login</a>
+            <a href="/register" class="btn btn-success">Register</a>
+        </div>
+
+        <div th:if="${user != null}" class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <span th:text="${user.firstName}">User</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                <li><a class="dropdown-item" href="/cart">🛒 Cart</a></li>
+                <li><a class="dropdown-item" href="/orders">📦 Orders</a></li>
+                <li><a class="dropdown-item" href="/settings">⚙️ Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container mt-5 mb-5">
+    <!-- Back button -->
+    <div class="mb-4">
+        <a href="/" class="btn btn-outline-secondary">
+            ← Back to Products
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- LEFT: Product Image -->
+        <div class="col-md-6 mb-4">
+            <div class="card p-4">
+                <img th:if="${product.variants != null and !product.variants.isEmpty()}"
+                     th:src="${product.variants[0].imageUrl}"
+                     style="max-height: 450px; width: 100%; object-fit: contain; background: #f8f9fa; border-radius: 8px; padding: 30px;"
+                     alt="Product Image"
+                     onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+
+                <img th:if="${product.variants == null or product.variants.isEmpty()}"
+                     src="https://via.placeholder.com/400x400?text=No+Image"
+                     style="max-height: 450px; width: 100%; object-fit: contain; background: #f8f9fa; border-radius: 8px; padding: 30px;"
+                     alt="No Image">
+            </div>
+        </div>
+
+        <!-- RIGHT: Product Details -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <!-- Product Name -->
+                <h2 th:text="${product.productName}" class="mb-3">Product Name</h2>
+
+                <!-- Product Description -->
+                <p class="text-muted mb-4" th:text="${product.productDescription}">
+                    Product description goes here
+                </p>
+
+                <!-- Price Range -->
+                <div class="mb-4">
+                    <h3 class="text-success">
+                        Starting at
+                        <span th:if="${product.variants != null and !product.variants.isEmpty()}"
+                              th:text="'$' + ${product.variants[0].price}">
+                            $0.00
+                        </span>
+                    </h3>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Select Variant Form -->
+                <form method="POST" th:action="@{/cart/add}">
+                    <h5 class="mb-3">Select Configuration:</h5>
+
+                    <!-- No variants available -->
+                    <div th:if="${product.variants == null or product.variants.isEmpty()}"
+                         class="alert alert-warning">
+                        No variants available for this product.
+                    </div>
+
+                    <!-- Dropdown to select variant -->
+                    <div th:if="${product.variants != null and !product.variants.isEmpty()}"
+                         class="mb-4">
+                        <label for="variantSelect" class="form-label fw-bold">Choose your option:</label>
+                        <select class="form-select form-select-lg" id="variantSelect" name="variantId" required>
+                            <option value="" selected disabled>-- Select Color & Storage --</option>
+                            <option th:each="variant : ${product.variants}"
+                                    th:value="${variant.id}"
+                                    th:text="${variant.color} + ' - ' + ${variant.storage} + ' - $' + ${variant.price} +
+                                             (${variant.quantity > 0} ? ' (' + ${variant.quantity} + ' in stock)' : ' (Out of Stock)')"
+                                    th:disabled="${variant.quantity <= 0}">
+                                Color - Storage - Price
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="mb-4">
+                        <label for="quantity" class="form-label fw-bold">Quantity:</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity"
+                               value="1" min="1" max="10" required>
+                    </div>
+
+                    <!-- Add to Cart Button -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            🛒 Add to Cart
+                        </button>
+                        <a href="/" class="btn btn-outline-primary">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Specifications Table -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card p-4">
+                <h4 class="mb-3">All Available Options</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Color</th>
+                            <th>Storage</th>
+                            <th>Price</th>
+                            <th>Availability</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="variant : ${product.variants}">
+                            <td th:text="${variant.color}">Color</td>
+                            <td th:text="${variant.storage}">Storage</td>
+                            <td class="text-success fw-bold" th:text="'$' + ${variant.price}">$0.00</td>
+                            <td>
+                                    <span th:if="${variant.quantity > 0}"
+                                          class="badge bg-success"
+                                          th:text="${variant.quantity} + ' available'">
+                                        In Stock
+                                    </span>
+                                <span th:if="${variant.quantity <= 0}"
+                                      class="badge bg-danger">
+                                        Out of Stock
+                                    </span>
+                            </td>
+                            <td>
+                                <form method="POST" th:action="@{/cart/add}" style="display: inline;">
+                                    <input type="hidden" name="variantId" th:value="${variant.id}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-success"
+                                            th:disabled="${variant.quantity <= 0}">
+                                        Add to Cart
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

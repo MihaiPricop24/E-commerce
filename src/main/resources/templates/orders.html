@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Apple Store</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/"> Apple Store</a>
+
+        <form class="d-flex me-auto ms-3">
+            <input class="form-control me-2" type="search" placeholder="Search" name="search">
+            <button class="btn btn-success" type="submit">Search</button>
+        </form>
+
+        <div th:if="${user != null}" class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <span th:text="${user.firstName}">User</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                <li><a class="dropdown-item" href="/cart">🛒 Cart</a></li>
+                <li><a class="dropdown-item" href="/orders">📦 Orders</a></li>
+                <li><a class="dropdown-item" href="/settings">⚙️ Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container mt-5 mb-5">
+
+    <!-- Success/Error Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <h2 class="mb-4">📦 My Orders</h2>
+
+    <!-- No Orders -->
+    <div th:if="${orders == null or orders.isEmpty()}" class="text-center py-5">
+        <div class="card p-5">
+            <h3 class="text-muted mb-3">You haven't placed any orders yet</h3>
+            <p class="mb-4">Start shopping to place your first order!</p>
+            <a href="/" class="btn btn-primary btn-lg">Browse Products</a>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div th:if="${orders != null and !orders.isEmpty()}">
+        <div th:each="order : ${orders}" class="card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <!-- Order Info -->
+                    <div class="col-md-3">
+                        <h5 class="mb-1">Order #<span th:text="${order.id}">12345</span></h5>
+                        <p class="text-muted small mb-0"
+                           th:text="${#temporals.format(order.timeOfOrder, 'MMM dd, yyyy')}">
+                            Nov 25, 2024
+                        </p>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-2">
+                        <span class="badge bg-primary" th:text="${order.status}">PENDING</span>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="col-md-2">
+                        <strong class="text-success" th:text="'$' + ${order.price}">$0.00</strong>
+                    </div>
+
+                    <!-- Items Count -->
+                    <div class="col-md-3">
+                        <small class="text-muted">
+                            <span th:text="${order.orderItems.size()}">3</span> item(s)
+                        </small>
+                    </div>
+
+                    <!-- View Details Button -->
+                    <div class="col-md-2 text-end">
+                        <a th:href="@{/orders/{id}(id=${order.id})}" class="btn btn-outline-primary btn-sm">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

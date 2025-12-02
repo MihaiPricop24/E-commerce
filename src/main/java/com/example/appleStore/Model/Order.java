@@ -27,6 +27,9 @@ public class Order {
     private Double price;
     private LocalDateTime timeOfOrder;
     private String status;
+    private String shippingAddress;
+    private String shippingCity;
+    private String phoneNumber;
 
     @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems;

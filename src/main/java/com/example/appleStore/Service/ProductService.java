@@ -3,8 +3,8 @@ package com.example.appleStore.Service;
 import com.example.appleStore.DTO.ProductFilterDTO;
 import com.example.appleStore.Model.Product;
 import com.example.appleStore.Model.ProductVariant;
-import com.example.appleStore.Repository.CategoryRepository;
 import com.example.appleStore.Repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,14 +14,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
-
-    public  ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) {
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-    }
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
@@ -38,7 +33,7 @@ public class ProductService {
     public List<Product> filterProducts(ProductFilterDTO filters){
         List<Product> products;
 
-        if(filters.getCategoryId() == null){
+        if(filters.getCategoryId() != null){
             products = productRepository.findByCategory_Id(filters.getCategoryId());
         } else {
             products = productRepository.findAllWithVariants();

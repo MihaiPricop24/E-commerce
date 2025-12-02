@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Apple Store</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/"> Apple Store</a>
+
+        <form class="d-flex me-auto ms-3">
+            <input class="form-control me-2" type="search" placeholder="Search" name="search">
+            <button class="btn btn-success" type="submit">Search</button>
+        </form>
+
+        <div th:if="${user != null}" class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <span th:text="${user.firstName}">User</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                <li><a class="dropdown-item" href="/cart">🛒 Cart</a></li>
+                <li><a class="dropdown-item" href="/orders">📦 Orders</a></li>
+                <li><a class="dropdown-item" href="/settings">⚙️ Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container mt-5 mb-5">
+
+    <!-- Back button -->
+    <div class="mb-4">
+        <a href="/" class="btn btn-outline-secondary">
+            ← Continue Shopping
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <h2 class="mb-4">🛒 Shopping Cart</h2>
+
+    <!-- Empty Cart -->
+    <div th:if="${cartItems == null or cartItems.isEmpty()}" class="text-center py-5">
+        <div class="card p-5">
+            <h3 class="text-muted mb-3">Your cart is empty</h3>
+            <p class="mb-4">Add some products to get started!</p>
+            <a href="/" class="btn btn-primary btn-lg">Browse Products</a>
+        </div>
+    </div>
+
+    <!-- Cart Items -->
+    <div th:if="${cartItems != null and !cartItems.isEmpty()}">
+        <div class="row">
+            <!-- LEFT: Cart Items List -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <!-- Cart Item -->
+                        <div th:each="item, iterStat : ${cartItems}"
+                             class="row mb-4 pb-4"
+                             th:classappend="${!iterStat.last} ? 'border-bottom' : ''">
+
+                            <!-- Product Image -->
+                            <div class="col-md-3">
+                                <img th:src="${item.productVariant.imageUrl}"
+                                     class="img-fluid rounded"
+                                     style="max-height: 150px; object-fit: contain; background: #f8f9fa; padding: 10px;"
+                                     alt="Product Image"
+                                     onerror="this.src='https://via.placeholder.com/150x150?text=No+Image'">
+                            </div>
+
+                            <!-- Product Details -->
+                            <div class="col-md-5">
+                                <h5 th:text="${item.productVariant.product.productName}">Product Name</h5>
+                                <p class="text-muted mb-2">
+                                    <strong>Color:</strong> <span th:text="${item.productVariant.color}">Black</span><br>
+                                    <strong>Storage:</strong> <span th:text="${item.productVariant.storage}">256GB</span>
+                                </p>
+                                <p class="text-success fw-bold mb-0"
+                                   th:text="'$' + ${item.productVariant.price}">$999.00</p>
+                            </div>
+
+                            <!-- Quantity & Actions -->
+                            <div class="col-md-4 text-end">
+                                <!-- Quantity Update Form -->
+                                <form th:action="@{/cart/update/{itemId}(itemId=${item.id})}"
+                                      method="POST"
+                                      class="d-flex justify-content-end align-items-center mb-3">
+                                    <label class="me-2">Qty:</label>
+                                    <input type="number"
+                                           name="quantity"
+                                           th:value="${item.quantity}"
+                                           min="1"
+                                           max="10"
+                                           class="form-control form-control-sm"
+                                           style="width: 70px;">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary ms-2">
+                                        Update
+                                    </button>
+                                </form>
+
+                                <!-- Subtotal -->
+                                <p class="fw-bold mb-2"
+                                   th:text="'Subtotal: $' + ${item.productVariant.price * item.quantity}">
+                                    Subtotal: $999.00
+                                </p>
+
+                                <!-- Remove Button -->
+                                <form th:action="@{/cart/remove/{itemId}(itemId=${item.id})}"
+                                      method="POST"
+                                      class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        🗑️ Remove
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clear Cart Button -->
+                <form th:action="@{/cart/clear}" method="POST">
+                    <button type="submit" class="btn btn-outline-danger"
+                            onclick="return confirm('Are you sure you want to clear your cart?')">
+                        Clear Cart
+                    </button>
+                </form>
+            </div>
+
+            <!-- RIGHT: Order Summary -->
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-4">Order Summary</h4>
+
+                        <!-- Item Count -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Items:</span>
+                            <span th:text="${itemCount} + ' items'">0 items</span>
+                        </div>
+
+                        <!-- Subtotal -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span th:text="'$' + ${total}">$0.00</span>
+                        </div>
+
+                        <!-- Shipping -->
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping:</span>
+                            <span class="text-success">FREE</span>
+                        </div>
+
+                        <hr>
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <strong>Total:</strong>
+                            <strong class="text-success" style="font-size: 1.5rem;"
+                                    th:text="'$' + ${total}">$0.00</strong>
+                        </div>
+
+                        <!-- Checkout Button -->
+                        <a href="/orders/checkout" class="btn btn-success btn-lg w-100 mb-3">
+                            Proceed to Checkout
+                        </a>
+
+                        <!-- Continue Shopping -->
+                        <a href="/" class="btn btn-outline-secondary w-100">
+                            Continue Shopping
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title">✅ Benefits</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            <li class="mb-2">✓ Free shipping on all orders</li>
+                            <li class="mb-2">✓ 14-day return policy</li>
+                            <li class="mb-2">✓ 1-year warranty</li>
+                            <li class="mb-0">✓ Secure payment</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

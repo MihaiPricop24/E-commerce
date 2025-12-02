@@ -1,29 +1,24 @@
 package com.example.appleStore.Service;
 
 import com.example.appleStore.Model.Cart;
-import com.example.appleStore.Model.Product;
 import com.example.appleStore.Model.ProductVariant;
 import com.example.appleStore.Model.User;
 import com.example.appleStore.Repository.CartRepository;
 import com.example.appleStore.Repository.ProductVariantRepository;
 import com.example.appleStore.Repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CartService {
     private final CartRepository cartRepository;
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
-
-    public CartService(CartRepository cartRepository, ProductVariantRepository productVariantRepository,  UserRepository userRepository) {
-        this.cartRepository = cartRepository;
-        this.productVariantRepository = productVariantRepository;
-        this.userRepository = userRepository;
-    }
 
     public List<Cart> getCartByUser(long userId){
         return cartRepository.findByUserId(userId);

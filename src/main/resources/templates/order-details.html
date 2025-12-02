@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Apple Store</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/"> Apple Store</a>
+
+        <form class="d-flex me-auto ms-3">
+            <input class="form-control me-2" type="search" placeholder="Search" name="search">
+            <button class="btn btn-success" type="submit">Search</button>
+        </form>
+
+        <div th:if="${user != null}" class="dropdown">
+            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                <span th:text="${user.firstName}">User</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                <li><a class="dropdown-item" href="/cart">🛒 Cart</a></li>
+                <li><a class="dropdown-item" href="/orders">📦 Orders</a></li>
+                <li><a class="dropdown-item" href="/settings">⚙️ Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container mt-5 mb-5">
+
+    <!-- Success Message -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="/orders" class="btn btn-outline-secondary">← Back to Orders</a>
+    </div>
+
+    <!-- Order Header -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h3>Order #<span th:text="${order.id}">12345</span></h3>
+                    <p class="text-muted mb-0">
+                        Placed on <span th:text="${#temporals.format(order.timeOfOrder, 'MMM dd, yyyy HH:mm')}">Nov 25, 2024</span>
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <span class="badge bg-primary fs-6" th:text="${order.status}">PENDING</span>
+                    <h4 class="text-success mt-2" th:text="'$' + ${order.price}">$0.00</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- LEFT: Order Items -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Order Items</h5>
+
+                    <div th:each="item, iterStat : ${order.orderItems}"
+                         class="row mb-3 pb-3"
+                         th:classappend="${!iterStat.last} ? 'border-bottom' : ''">
+
+                        <div class="col-md-2">
+                            <img th:src="${item.productVariant.imageUrl}"
+                                 class="img-fluid rounded"
+                                 style="max-height: 100px; object-fit: contain; background: #f8f9fa; padding: 8px;"
+                                 alt="Product"
+                                 onerror="this.src='https://via.placeholder.com/100x100?text=No+Image'">
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 th:text="${item.productVariant.product.productName}">Product Name</h6>
+                            <p class="text-muted small mb-1">
+                                <strong>Color:</strong> <span th:text="${item.productVariant.color}">Black</span><br>
+                                <strong>Storage:</strong> <span th:text="${item.productVariant.storage}">256GB</span>
+                            </p>
+                            <p class="mb-0">
+                                <strong>Price:</strong> <span th:text="'$' + ${item.price}">$999.00</span>
+                            </p>
+                        </div>
+
+                        <div class="col-md-2 text-center">
+                            <p class="text-muted mb-0">Quantity</p>
+                            <strong th:text="${item.quantity}">1</strong>
+                        </div>
+
+                        <div class="col-md-2 text-end">
+                            <p class="text-muted mb-0">Subtotal</p>
+                            <strong th:text="'$' + ${item.price * item.quantity}">$999.00</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Shipping & Payment Info -->
+        <div class="col-lg-4">
+            <!-- Shipping Address -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">📍 Shipping Address</h5>
+                    <p class="mb-1" th:text="${order.user.firstName + ' ' + order.user.lastName}">John Doe</p>
+                    <p class="mb-1" th:text="${order.shippingAddress}">123 Main St</p>
+                    <p class="mb-1" th:text="${order.shippingCity}">New York</p>
+                    <p class="mb-0" th:text="${order.phoneNumber}">+1 234 567 8900</p>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span th:text="'$' + ${order.price}">$0.00</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping:</span>
+                        <span class="text-success">FREE</span>
+                    </div>
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong class="text-success" th:text="'$' + ${order.price}">$0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancel Order (if pending) -->
+            <div th:if="${order.status == 'PENDING'}" class="card">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">Cancel Order</h5>
+                    <p class="small text-muted">You can cancel this order while it's still pending.</p>
+                    <form th:action="@{/orders/{id}/cancel(id=${order.id})}" method="POST">
+                        <button type="submit" class="btn btn-danger w-100"
+                                onclick="return confirm('Are you sure you want to cancel this order?')">
+                            Cancel Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

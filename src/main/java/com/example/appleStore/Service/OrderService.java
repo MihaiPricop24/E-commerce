@@ -3,6 +3,7 @@ package com.example.appleStore.Service;
 import com.example.appleStore.Model.*;
 import com.example.appleStore.Repository.*;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
@@ -17,18 +19,6 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final ProductVariantRepository productVariantRepository;
     private final UserRepository userRepository;
-
-    public OrderService(OrderRepository orderRepository,
-                        OrderItemRepository orderItemRepository,
-                        CartRepository cartRepository,
-                        ProductVariantRepository productVariantRepository,
-                        UserRepository userRepository) {
-        this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
-        this.cartRepository = cartRepository;
-        this.productVariantRepository = productVariantRepository;
-        this.userRepository = userRepository;
-    }
 
     @Transactional
     public Order createOrder(Long userId) {
